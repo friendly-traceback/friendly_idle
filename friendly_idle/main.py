@@ -14,7 +14,7 @@ import friendly_traceback  # noqa
 from friendly_traceback.console_helpers import *  # noqa
 from friendly_traceback.console_helpers import helpers, FriendlyHelpers  # noqa
 from friendly_traceback import source_cache
-from friendly_traceback.my_gettext import current_lang
+from .idle_gettext import current_lang
 from . import idle_formatter
 
 
@@ -27,6 +27,15 @@ Friendly.__friendly_repr__ = Friendly.__repr__
 helpers["Friendly"] = Friendly
 
 _set_formatter = set_formatter  # noqa
+_set_lang = set_lang  # noqa
+
+
+def set_lang(lang):
+    current_lang.install(lang)
+    _set_lang(lang)
+
+
+set_lang.__rich_repr__ = _set_lang.__rich_repr__
 
 
 def set_formatter(formatter=None):
