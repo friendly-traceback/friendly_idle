@@ -5,23 +5,20 @@ import inspect
 from pathlib import Path
 import sys  # noqa
 
-import linecache
 
-from idlelib import rpc
 from idlelib import run as idlelib_run
 
 import friendly_traceback  # noqa
 from friendly_traceback.console_helpers import *  # noqa
 from friendly_traceback.console_helpers import helpers, FriendlyHelpers  # noqa
-from friendly_traceback import source_cache
+
 from .idle_gettext import current_lang
 from . import idle_formatter
+from . import patch_source_cache  # noqa
 
 
 friendly_traceback.exclude_file_from_traceback(__file__)
 
-del dark  # noqa
-del light  # noqa
 Friendly = FriendlyHelpers()
 Friendly.__friendly_repr__ = Friendly.__repr__
 helpers["Friendly"] = Friendly
@@ -117,26 +114,8 @@ def install_in_idle_shell(lang="en"):
     raises SyntaxErrors.
     """
     friendly_traceback.exclude_file_from_traceback(idlelib_run.__file__)
-    rpchandler = rpc.objecttable["exec"].rpchandler  # noqa
-
-    def get_lines(filename, linenumber):
-        lines = rpchandler.remotecall("linecache", "getlines", (filename, None), {})
-        new_lines = []
-        for line in lines:
-            if not line.endswith("\n"):
-                line += "\n"
-            if filename.startswith("<pyshell#") and line.startswith("\t"):
-                # Remove extra indentation added in the shell (\t == 8 spaces)
-                line = "    " + line[1:]
-            new_lines.append(line)
-        if linenumber is None:
-            return new_lines
-        return new_lines[linenumber - 1 : linenumber]
-
-    source_cache.idle_get_lines = get_lines
-
     friendly_traceback.install(include="friendly_tb", redirect=idle_writer, lang=lang)
-    linecache.idle_showsyntaxerror = sys.excepthook
+
     # Current limitation
     idle_writer("                                WARNING\n", "ERROR")  # noqa
     idle_writer("Friendly cannot handle SyntaxErrors for code entered in the shell.\n")

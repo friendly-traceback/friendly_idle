@@ -5,8 +5,10 @@ how the basic formatting is done.
 
 All that matters is that, it is debugged and works appropriately! ;-)
 """
+# TODO: add unit tests
+
 import sys
-from friendly_traceback.formatters import select_items, no_result, repl_indentation
+from friendly_traceback.base_formatters import select_items, no_result, repl_indentation
 
 if sys.version_info >= (3, 9, 5):
     repl_indentation["suggest"] = "single"  # more appropriate value
