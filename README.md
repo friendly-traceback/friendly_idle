@@ -1,4 +1,4 @@
 # friendly_idle
-This wll be a customized version of friendly-traceback for Python's IDLE.
 
-Code to be updated soon.
+This provides a patched version of IDLE to include friendly/friendly-traceback
+
