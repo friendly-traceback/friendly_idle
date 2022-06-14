@@ -6,3 +6,5 @@ Install using the usual `pip install friendly_idle`.
 
 Requires either Python 3.8.10, or Python >= 3.9.5.
 
+You can launch it from a terminal using `friendly_idle`.
+
