@@ -4,6 +4,6 @@ import sys
 
 py = sys.version_info
 
-if py < (3, 8, 10) or (py > (3, 9) < (3, 9, 5)):
-    print("Python 3.8.10 or greater than 3.9.4 is required.")
+if py < (3, 8, 10) or (3, 9) < py < (3, 9, 5):
+    print("Python version 3.8.10, or Python version greater than 3.9.4 is required.")
     sys.exit()
