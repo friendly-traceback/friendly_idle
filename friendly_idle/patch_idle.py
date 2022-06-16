@@ -1,4 +1,11 @@
+"""This module takes care of patching a few methods from various
+IDLE classes at import time."""
+
 from friendly_idle.patching_hook import add_patch
+
+
+# In normal usage, idlelib.run is imported multiple times
+# during a normal session with IDLE.
 
 
 def add_recreate_syntax_error(module):
@@ -25,6 +32,7 @@ def add_recreate_syntax_error(module):
 
 
 add_patch("idlelib.run", add_recreate_syntax_error)
+# ========================================================================
 
 
 def replace_transfer_path(module):
@@ -58,19 +66,28 @@ def replace_transfer_path(module):
 
 
 add_patch("idlelib.pyshell", replace_transfer_path)
+# ========================================================================
 
 
 def replace_idle_title(module):
     """Replaces IDLE's title, prepending it by Friendly"""
-    module.PyShell.shell_title = "Friendly " + module.PyShell.shell_title
+    from platform import python_version
+    from friendly_idle import __version__
+
+    module.PyShell.shell_title = (
+        f"Friendly IDLE (version {__version__}; Python version {python_version()})"
+    )
     return module
 
 
 add_patch("idlelib.pyshell", replace_idle_title)
+# ========================================================================
 
 
 def replace_runsource(module):
-    """Replaces idlelib.pyshell.
+    """Replaces idlelib.pyshell.runsource so that we save the source code
+    entered in the shell, together with the 'filename' which would be of
+    the form '<pyshell#...>'.
     """
 
     def runsource(self, source):
@@ -89,12 +106,13 @@ def replace_runsource(module):
 
 
 add_patch("idlelib.pyshell", replace_runsource)
+# ========================================================================
 
 
 def replace_showsyntaxerror(module):
     """Replaces idlelib.pyshell.ModifiedInterpreter.showsyntaxerror
-    adding a call to a function used to recreate the SyntaxError
-    and process it with friendly.
+    adding a call to a function added to idlelib.run.Executive and
+    used to recreate the SyntaxError and process it with friendly-traceback.
     """
 
     def showsyntaxerror(self, filename=None):
@@ -132,7 +150,8 @@ def replace_showsyntaxerror(module):
         # highlighted in red, and a second time (in the friendly-traceback) with
         # carets (^) indicating the location of the error.
         # The approach we use is to *compile* the code with the repeated filename
-        # and explicitly catch the exception with a customized display.
+        # and explicitly catch the exception in the part of the code
+        # where it will be executed..
 
         if self.rpcclt:
             self.rpcclt.remotequeue(
@@ -147,6 +166,7 @@ def replace_showsyntaxerror(module):
 
 
 add_patch("idlelib.pyshell", replace_showsyntaxerror)
+# ========================================================================
 
 
 def replace_build_subprocess_arglist(module):
@@ -178,11 +198,14 @@ def replace_build_subprocess_arglist(module):
 
 
 add_patch("idlelib.pyshell", replace_build_subprocess_arglist)
+# ========================================================================
 
 
 def replace_checksyntax(module):
     """Replaces idlelib.runscript.ScriptBinding.checksyntax so that
     the information from friendly-traceback can be shown in the popup window.
+    This method is called either when a menu item is used to check the syntax
+    or to actually run a module.
     """
 
     def checksyntax(self, filename):
@@ -190,6 +213,7 @@ def replace_checksyntax(module):
         from friendly import idle_writer
         from functools import partial
 
+        # Most of the code below is recopied as is from IDLE.
         self.shell = shell = self.flist.open_shell()
         saved_stream = shell.get_warning_stream()
         shell.set_warning_stream(shell.stderr)
@@ -214,6 +238,7 @@ def replace_checksyntax(module):
                 lineno += 1  # mark end of offending line
             pos = "0.0 + %d lines + %d chars" % (lineno - 1, offset - 1)
             editwin.colorize_syntax_error(text, pos)
+            # New code, to prepare the new try block.
             _writer = partial(idle_writer.writer, stream=shell)
             _formatter = idle_writer.formatter
             try:
@@ -224,6 +249,7 @@ def replace_checksyntax(module):
             except Exception as exc:
                 print("Attempting to process SyntaxError with friendly failed.")
                 print(exc)
+                # Normally, this would be the only line executed by IDLE.
                 self.errorbox("SyntaxError", "%-20s" % msg)
             return False
         finally:
