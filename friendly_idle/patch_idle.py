@@ -187,6 +187,8 @@ def replace_checksyntax(module):
 
     def checksyntax(self, filename):
         import friendly_traceback
+        from friendly import idle_writer
+        from functools import partial
 
         self.shell = shell = self.flist.open_shell()
         saved_stream = shell.get_warning_stream()
@@ -212,13 +214,15 @@ def replace_checksyntax(module):
                 lineno += 1  # mark end of offending line
             pos = "0.0 + %d lines + %d chars" % (lineno - 1, offset - 1)
             editwin.colorize_syntax_error(text, pos)
+            _writer = partial(idle_writer.writer, stream=shell)
+            _formatter = idle_writer.formatter
             try:
                 friendly_traceback.exclude_file_from_traceback(__file__)
-                friendly_traceback.explain_traceback(redirect="capture")
-                result = friendly_traceback.get_output()
-                # It would be nicer to have something with monospace font.
-                self.errorbox("SyntaxError", "%s" % result)
+                friendly_traceback.set_formatter(_formatter)
+                friendly_traceback.explain_traceback(redirect=_writer)
+                self.shell.showprompt()
             except Exception as exc:
+                print("Attempting to process SyntaxError with friendly failed.")
                 print(exc)
                 self.errorbox("SyntaxError", "%-20s" % msg)
             return False
