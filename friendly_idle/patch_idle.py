@@ -9,16 +9,15 @@ def add_recreate_syntax_error(module):
 
     def recreate_syntax_error(self, source, filename):
         import friendly_traceback
-        from friendly_traceback.config import session
-        from friendly.idle import explain
 
         try:
             compile(source + "\n", filename, "single")
         except (OverflowError, SyntaxError, ValueError):
-            friendly_traceback.set_include("message")
+            old_included = friendly_traceback.get_include()
+            if old_included == "friendly_tb":
+                friendly_traceback.set_include("message_plus")
             friendly_traceback.explain_traceback()
-            if "suggest" in session.saved_info[-1]:
-                explain("hint")
+            friendly_traceback.set_include(old_included)
 
     module.Executive.recreate_syntax_error = recreate_syntax_error
 
@@ -121,6 +120,19 @@ def replace_showsyntaxerror(module):
             pos = "iomark linestart + %d lines + %d chars" % (lineno - 1, offset - 1)
         tkconsole.colorize_syntax_error(text, pos)
         tkconsole.resetoutput()
+
+        # We might be tempted to use something like:
+        #    self.runcommand(self._source)
+        # to recreate the error on the client side.
+        # However, the code that would run on the client side
+        # would not be saved anew in linecache which, in some instances,
+        # would cause friendly to raise an exception.
+        # Furthermore, the traceback would show the problematic line twice
+        # once with the location of the error (on the original code at the prompt)
+        # highlighted in red, and a second time (in the friendly-traceback) with
+        # carets (^) indicating the location of the error.
+        # The approach we use is to *compile* the code with the repeated filename
+        # and explicitly catch the exception with a customized display.
 
         if self.rpcclt:
             self.rpcclt.remotequeue(
