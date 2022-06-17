@@ -1,6 +1,22 @@
 # Live Patching IDLE for Friendlier Tracebacks
 
 In this document, I explain how friendly_idle is implemented.
+This is currently work in progress.
+
+What I need to do:
+
+* [ ] Give an overview of friendly_idle
+  - [ ] Include using console helpers
+* [ ] Explain how friendly_traceback, friendly, friendly_idle work together
+  * [ ] Explain how friendly on its own works with IDLE, including its limitations.
+* [ ] Explain the customization of linecache done by IDLE and how friendly works with it
+* [ ] Explain the RPC server used by IDLE
+* [ ] Explain how live code patching can be done using import hooks
+* [ ] Explain the limitation of custom exception hooks in IDLE
+* [ ] Explain what happens when the shell is restarted
+* [ ] Explain what happens when a module is run from an editor window
+  - [ ] Include the case where a SyntaxError is raised
+
 
 ## Live Patching Using an Import Hook.
 
@@ -73,6 +89,8 @@ included in Python's standard library: new features are often ported back to pre
 "minor" versions. For example, *partial* support for `sys.excepthook()` was
 [introduced in Python 3.10](https://docs.python.org/3/whatsnew/3.10.html#idle-and-idlelib]
 and backported to 3.9.5 and 3.8.10.
+
+*Note: The following diagram is just a first draft. Many more diagrams will need to be added.*
 
 ```mermaid
 sequenceDiagram
