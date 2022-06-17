@@ -49,6 +49,7 @@ def replace_transfer_path(module):
         else:
             path = sys.path
 
+        # Add required info for friendly
         self.runcommand(
             """if 1:
         import sys as _sys
@@ -60,6 +61,9 @@ def replace_transfer_path(module):
         \n"""
             % (path, __file__)
         )
+        # Also, introduce a variable to fix the issue noted by Raymond Hettinger
+        # in https://twitter.com/raymondh/status/1501700903870468099
+        self.error_at_end_of_line = False
 
     module.ModifiedInterpreter.transfer_path = transfer_path
     return module
@@ -93,6 +97,11 @@ def replace_runsource(module):
     def runsource(self, source):
         "Extend base class method: Stuff the source in the line cache first"
         from code import InteractiveInterpreter
+
+        if self.error_at_end_of_line:
+            # For problem reported by R. Hettinger on Twitter.
+            self.error_at_end_of_line = False
+            self.tkconsole.text.tag_remove("ERROR", "1.0", "end")
 
         filename = self.stuffsource(source)
 
@@ -136,6 +145,9 @@ def replace_showsyntaxerror(module):
             pos = "iomark + %d chars" % (offset - 1)
         else:
             pos = "iomark linestart + %d lines + %d chars" % (lineno - 1, offset - 1)
+
+        # For problem reported by R. Hettinger on Twitter.
+        self.error_at_end_of_line = text.get(pos) == "\n"
         tkconsole.colorize_syntax_error(text, pos)
         tkconsole.resetoutput()
 
