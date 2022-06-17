@@ -1,6 +1,6 @@
 # friendly_idle
 
-This provides a patched version of IDLE to include friendly/friendly-traceback.
+This provides a "live patched" [1] version of IDLE to include friendly/friendly-traceback.
 
 Install using the usual `pip install friendly_idle`.
 
@@ -17,3 +17,7 @@ interactive help from the embedded version of friendly/friendly-traceback.
 
 
 Please see https://friendly-traceback.github.io/docs/index.html for information about friendly/friendly-traceback.
+
+---
+
+[1] By "live patched", I mean that it uses regular IDLE but patches a few modules as they are imported.
