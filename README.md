@@ -4,7 +4,7 @@ This provides a "live patched" [1] version of IDLE to include friendly/friendly-
 
 Install using the usual `pip install friendly_idle`.
 
-Requires either Python 3.8.10, or Python >= 3.9.5.
+Requires either Python 3.8.10+, or Python >= 3.9.5.  (It has not been tested with Python 3.11.)
 
 You can launch it from a terminal using `friendly_idle`.
 
