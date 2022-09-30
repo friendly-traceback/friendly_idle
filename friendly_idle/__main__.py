@@ -1,4 +1,5 @@
-from friendly_idle import patch_idle
+from friendly_idle import patch_idle  # noqa
+
 
 def main():
     import idlelib.pyshell
