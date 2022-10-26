@@ -156,7 +156,7 @@ def replace_showsyntaxerror(module):
         # carets (^) indicating the location of the error.
         # The approach we use is to *compile* the code with the repeated filename
         # and explicitly catch the exception in the part of the code
-        # where it will be executed..
+        # where it will be executed.
 
         if self.rpcclt:
             self.rpcclt.remotequeue(
