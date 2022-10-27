@@ -57,6 +57,7 @@ def replace_transfer_path(module):
         from friendly.idle import *
         from friendly_traceback import exclude_file_from_traceback
         exclude_file_from_traceback(%r)
+        exclude_file_from_traceback('<string>')
         del _sys
         \n"""
             % (path, __file__)
